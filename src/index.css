@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out 0s 2;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --color-roblox-blue: #10B981; /* Emerald Green */
+  --color-roblox-dark: #064E3B; /* Deep Emerald */
+  --color-roblox-bg: #ECFDF5; /* Very Light Emerald/Mint */
+  --color-roblox-card: #FFFFFF;
+  --color-roblox-topbar: rgba(6, 78, 59, 0.8); /* Translucent Deep Emerald */
+  --color-pastel-blue: #A7F3D0; /* Pastel Emerald/Mint */
+  --color-pastel-green: #D1FAE5;
+  --color-pastel-yellow: #FEF3C7;
+  --color-pastel-purple: #E0E7FF;
+  --color-pastel-pink: #FCE7F3;
+  --color-pastel-magenta: #FBCFE8;
+  --color-emerald-accent: #34D399;
+}
+
+@layer base {
+  body {
+    @apply bg-roblox-bg text-roblox-dark font-sans;
+  }
+}
+
+.roblox-shadow {
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+.roblox-button {
+  @apply relative transition-all duration-100 active:translate-y-[2px] active:shadow-none font-bold rounded-lg px-4 py-2 flex items-center justify-center gap-2;
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.roblox-button-blue {
+  @apply relative transition-all duration-100 active:translate-y-[2px] active:shadow-none font-bold rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-roblox-blue text-white hover:brightness-110;
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.roblox-button-white {
+  @apply relative transition-all duration-100 active:translate-y-[2px] active:shadow-none font-bold rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white text-roblox-dark hover:bg-gray-50;
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.roblox-button:active {
+  box-shadow: 0 0px 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.roblox-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden;
+}
+
+.roblox-glass {
+  @apply backdrop-blur-md bg-roblox-topbar border-b border-white/10;
+}
+
+.forest-bg {
+  background-image: radial-gradient(circle at 2px 2px, rgba(16, 185, 129, 0.05) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-roblox-blue/20 rounded-full hover:bg-roblox-blue/40 transition-colors;
+}
