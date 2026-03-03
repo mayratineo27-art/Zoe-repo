@@ -54,7 +54,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 
 import Groq from "groq-sdk";
-import OpenAI from "openai";
 
 // --- Types ---
 type Section = 'home' | 'lessons' | 'games' | 'blackboard' | 'badges' | 'progress' | 'parents' | 'avatar';
@@ -553,15 +552,14 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
     console.log("Iniciando generación de lección para:", topic);
 
     try {
-      const apiKey = process.env.DEEPSEEK_API_KEY;
+      const apiKey = process.env.GROQ_API_KEY;
       if (!apiKey) {
-        throw new Error("API Key de DeepSeek no configurada.");
+        throw new Error("API Key de Groq no configurada.");
       }
 
-      const openai = new OpenAI({ baseURL: "https://api.deepseek.com", apiKey, dangerouslyAllowBrowser: true });
-      const response = await openai.chat.completions.create({
-        model: "deepseek-chat",
-        response_format: { type: 'json_object' },
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
           content: `Genera una lección de matemáticas para niños de primaria sobre el tema: ${topic}. 
@@ -577,7 +575,7 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
           ],
           "practice": { "question": "Pregunta de práctica", "correctAnswer": "Respuesta (solo el número)", "hint": "Una pista pequeña y divertida con emojis" }
         }
-        Asegúrate de que el lenguaje sea muy motivador, puntual (sin rodeos) y adecuado para niños con TDAH (bloques cortos, muchos emojis divertidos con temática de bosque, gemas y esmeraldas 🌲💎🍃✨🚀). No incluyas markdown.`
+        Asegúrate de que el lenguaje sea muy motivador, puntual (sin rodeos) y adecuado para niños con TDAH (bloques cortos, muchos emojis divertidos con temática de bosque, gemas y esmeraldas 🌲💎🍃✨🚀). No incluyas markdown, solo el JSON puro.`
         }]
       });
 
@@ -894,18 +892,17 @@ const GamesSection = ({ addXp }: any) => {
     setShowHint(false);
     console.log("Iniciando generación de reto IA");
     try {
-      const apiKey = process.env.DEEPSEEK_API_KEY;
+      const apiKey = process.env.GROQ_API_KEY;
       if (!apiKey) {
-        throw new Error("API Key de DeepSeek no configurada.");
+        throw new Error("API Key de Groq no configurada.");
       }
 
-      const openai = new OpenAI({ baseURL: "https://api.deepseek.com", apiKey, dangerouslyAllowBrowser: true });
-      const response = await openai.chat.completions.create({
-        model: "deepseek-chat",
-        response_format: { type: 'json_object' },
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
-          content: "Genera un reto matemático único para niños de primaria. Debe ser una pregunta de razonamiento matemático divertida. Responde en puro JSON: { \"question\": \"...\", \"correctAnswer\": \"...\", \"hint\": \"...\" }. No incluyas markdown."
+          content: "Genera un reto matemático único para niños de primaria. Debe ser una pregunta de razonamiento matemático divertida. Responde en JSON: { \"question\": \"...\", \"correctAnswer\": \"...\", \"hint\": \"...\" }. No incluyas markdown."
         }]
       });
 
@@ -2053,18 +2050,18 @@ const ParentsSection = ({ lessons, xp, dailyGoal, setDailyGoal, isAuthenticated,
   const generateAdvice = async () => {
     setIsGeneratingAdvice(true);
     try {
-      const apiKey = process.env.DEEPSEEK_API_KEY;
-      if (!apiKey) throw new Error("API Key de DeepSeek no configurada.");
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) throw new Error("API Key de Groq no configurada.");
 
-      const openai = new OpenAI({ baseURL: "https://api.deepseek.com", apiKey, dangerouslyAllowBrowser: true });
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
       const prompt = `Como experto en educación para niños con TDAH, analiza el progreso:
       - Temas completados: ${completedLessons.map((l: any) => l.topic).join(', ')}
       - Temas pendientes: ${pendingLessons.map((l: any) => l.topic).join(', ')}
       - XP actual: ${xp}
       Proporciona 3 consejos breves y alentadores para los padres sobre cómo apoyar el aprendizaje del niño esta semana. Usa un tono empático y profesional.`;
 
-      const response = await openai.chat.completions.create({
-        model: "deepseek-chat",
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }]
       });
       setAiAdvice(response.choices[0]?.message?.content || "No se pudo generar el consejo en este momento.");
