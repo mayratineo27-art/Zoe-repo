@@ -53,7 +53,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 
-import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 
 // --- Types ---
 type Section = 'home' | 'lessons' | 'games' | 'blackboard' | 'badges' | 'progress' | 'parents' | 'avatar';
@@ -552,15 +552,17 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
     console.log("Iniciando generación de lección para:", topic);
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = process.env.GROQ_API_KEY;
       if (!apiKey) {
-        throw new Error("API Key no encontrada. Por favor, asegúrate de que GEMINI_API_KEY esté configurada.");
+        throw new Error("API Key de Groq no configurada.");
       }
 
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Genera una lección de matemáticas para niños de primaria sobre el tema: ${topic}. 
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{
+          role: "user",
+          content: `Genera una lección de matemáticas para niños de primaria sobre el tema: ${topic}. 
         La respuesta debe ser un objeto JSON con esta estructura exacta:
         {
           "id": "string único",
@@ -574,9 +576,10 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
           "practice": { "question": "Pregunta de práctica", "correctAnswer": "Respuesta (solo el número)", "hint": "Una pista pequeña y divertida con emojis" }
         }
         Asegúrate de que el lenguaje sea muy motivador, puntual (sin rodeos) y adecuado para niños con TDAH (bloques cortos, muchos emojis divertidos con temática de bosque, gemas y esmeraldas 🌲💎🍃✨🚀). No incluyas markdown, solo el JSON puro.`
+        }]
       });
 
-      const text = response.text || "";
+      const text = response.choices[0]?.message?.content || "";
       console.log("Respuesta de IA recibida:", text);
 
       // Clean potential markdown code blocks
@@ -889,18 +892,21 @@ const GamesSection = ({ addXp }: any) => {
     setShowHint(false);
     console.log("Iniciando generación de reto IA");
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = process.env.GROQ_API_KEY;
       if (!apiKey) {
-        throw new Error("API Key no encontrada. Por favor, asegúrate de que GEMINI_API_KEY esté configurada.");
+        throw new Error("API Key de Groq no configurada.");
       }
 
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: "Genera un reto matemático único para niños de primaria. Debe ser una pregunta de razonamiento matemático divertida. Responde en JSON: { \"question\": \"...\", \"correctAnswer\": \"...\", \"hint\": \"...\" }. No incluyas markdown."
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{
+          role: "user",
+          content: "Genera un reto matemático único para niños de primaria. Debe ser una pregunta de razonamiento matemático divertida. Responde en JSON: { \"question\": \"...\", \"correctAnswer\": \"...\", \"hint\": \"...\" }. No incluyas markdown."
+        }]
       });
 
-      const text = response.text || "";
+      const text = response.choices[0]?.message?.content || "";
       console.log("Reto IA recibido:", text);
 
       const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -1567,21 +1573,25 @@ const BlackboardSection = ({ addXp }: any) => {
         ctx.drawImage(canvas, 0, 0);
       }
       const imageData = tempCanvas.toDataURL('image/jpeg').split(',')[1];
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) throw new Error("API Key no configurada.");
-      const ai = new GoogleGenAI({ apiKey });
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) throw new Error("API Key de Groq no configurada.");
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: {
-          parts: [
-            { inlineData: { mimeType: "image/jpeg", data: imageData } },
-            { text: "Identifica brevemente qué números o símbolos matemáticos hay en la imagen. Responde SOLO con los números/símbolos encontrados, nada más. Si no hay nada claro, no respondas nada." }
-          ]
-        }
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+
+      const response = await groq.chat.completions.create({
+        model: "llama-3.2-11b-vision-preview",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Identifica brevemente qué números o símbolos matemáticos hay en la imagen. Responde SOLO con los números/símbolos encontrados, nada más. Si no hay nada claro, no respondas nada." },
+              { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageData}` } }
+            ]
+          }
+        ]
       });
 
-      const result = response.text?.trim();
+      const result = response.choices[0]?.message?.content?.trim();
       if (result && result.length < 20) {
         setDetectedText(result);
       }
@@ -1640,28 +1650,25 @@ const BlackboardSection = ({ addXp }: any) => {
         ctx.drawImage(canvas, 0, 0);
       }
       const imageData = tempCanvas.toDataURL('image/jpeg').split(',')[1];
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) throw new Error("API Key no configurada.");
-      const ai = new GoogleGenAI({ apiKey });
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) throw new Error("API Key de Groq no configurada.");
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: {
-          parts: [
-            {
-              inlineData: {
-                mimeType: "image/jpeg",
-                data: imageData
-              }
-            },
-            {
-              text: "Eres un tutor de matemáticas para niños con TDAH. Mira la imagen, identifica la operación y resuélvela. Sé EXTREMADAMENTE puntual y directo. Usa este formato: 1. Operación detectada. 2. Pasos cortos (máximo 3). 3. Resultado final con un emoji. No uses párrafos largos."
-            }
-          ]
-        }
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+
+      const response = await groq.chat.completions.create({
+        model: "llama-3.2-11b-vision-preview",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Eres un tutor de matemáticas para niños con TDAH. Mira la imagen, identifica la operación y resuélvela. Sé EXTREMADAMENTE puntual y directo. Usa este formato: 1. Operación detectada. 2. Pasos cortos (máximo 3). 3. Resultado final con un emoji. No uses párrafos largos." },
+              { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageData}` } }
+            ]
+          }
+        ]
       });
 
-      setAiSolution(response.text || "No pude entender la operación. ¡Intenta escribirla más clarito!");
+      setAiSolution(response.choices[0]?.message?.content || "No pude entender la operación. ¡Intenta escribirla más clarito!");
       addXp(50);
     } catch (error: any) {
       console.error("AI Error:", error);
@@ -2043,18 +2050,21 @@ const ParentsSection = ({ lessons, xp, dailyGoal, setDailyGoal, isAuthenticated,
   const generateAdvice = async () => {
     setIsGeneratingAdvice(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) throw new Error("API Key de Groq no configurada.");
+
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
       const prompt = `Como experto en educación para niños con TDAH, analiza el progreso:
       - Temas completados: ${completedLessons.map((l: any) => l.topic).join(', ')}
       - Temas pendientes: ${pendingLessons.map((l: any) => l.topic).join(', ')}
       - XP actual: ${xp}
       Proporciona 3 consejos breves y alentadores para los padres sobre cómo apoyar el aprendizaje del niño esta semana. Usa un tono empático y profesional.`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }]
       });
-      setAiAdvice(response.text || "No se pudo generar el consejo en este momento.");
+      setAiAdvice(response.choices[0]?.message?.content || "No se pudo generar el consejo en este momento.");
     } catch (e) {
       console.error(e);
       setAiAdvice("Error al conectar con la IA de orientación.");
