@@ -568,7 +568,7 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
           "id": "string único",
           "title": "Título divertido",
           "topic": "Tema general",
-          "level": número del 1 al 5,
+          "level": 1,
           "completed": false,
           "steps": [
             { "title": "Paso 1", "text": "Explicación muy corta y directa (máximo 2 frases)", "simplified": "Explicación ultra-simple", "visual": "Emoji o texto visual divertido" }
