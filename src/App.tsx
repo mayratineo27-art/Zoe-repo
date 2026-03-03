@@ -558,24 +558,31 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
       }
 
       const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+
+      const scenarios = ["el espacio exterior con astronautas", "una jungla mágica con animales parlantes", "un castillo de Minecraft con dragones", "una ciudad submarina de sirenas", "un laboratorio secreto de superhéroes", "una pizzería robótica", "un bosque encantado con gnomos", "un mundo de dinosaurios velocistas", "una carrera de autos voladores"];
+      const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+      const seed = Math.floor(Math.random() * 100000);
+
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
-          content: `Genera una lección de matemáticas para niños de primaria sobre el tema: ${topic}. 
+          content: `Genera una lección de matemáticas TOTALMENTE ÚNICA y NUEVA para niños de primaria sobre el tema: "${topic}". 
+        Contextualiza toda la teoría y la práctica en el siguiente escenario interactivo: "${randomScenario}". 
+        Usa números al azar (variante: ${seed}) y no repitas historias de sesiones anteriores.
         La respuesta debe ser un objeto JSON con esta estructura exacta:
         {
           "id": "string único",
-          "title": "Título divertido",
+          "title": "Título divertido (incluye el escenario)",
           "topic": "Tema general",
           "level": 1,
           "completed": false,
           "steps": [
             { "title": "Paso 1", "text": "Explicación muy corta y directa (máximo 2 frases)", "simplified": "Explicación ultra-simple", "visual": "Emoji o texto visual divertido" }
           ],
-          "practice": { "question": "Pregunta de práctica", "correctAnswer": "Respuesta (solo el número)", "hint": "Una pista pequeña y divertida con emojis" }
+          "practice": { "question": "Pregunta de práctica matemática", "correctAnswer": "Respuesta (solo el número)", "hint": "Una pista pequeña y divertida con emojis" }
         }
-        Asegúrate de que el lenguaje sea muy motivador, puntual (sin rodeos) y adecuado para niños con TDAH (bloques cortos, muchos emojis divertidos con temática de bosque, gemas y esmeraldas 🌲💎🍃✨🚀). No incluyas markdown, solo el JSON puro.`
+        Asegúrate de que el lenguaje sea muy motivador, puntual (sin rodeos) y adecuado para niños con TDAH (bloques cortos, muchos emojis divertidos). No incluyas markdown, solo el JSON puro.`
         }]
       });
 
@@ -898,11 +905,19 @@ const GamesSection = ({ addXp }: any) => {
       }
 
       const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+
+      const challengeThemes = ["piratas contando monedas de oro", "astronautas calculando combustible estelar", "pasteleros midiendo ingredientes monstruosos", "detectives resolviendo un código secreto", "robots arreglando sus engranajes", "exploradores cruzando un puente de lava", "ninjas saltando obstáculos geométricos"];
+      const randomTheme = challengeThemes[Math.floor(Math.random() * challengeThemes.length)];
+      const seed = Math.floor(Math.random() * 100000);
+
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
-          content: "Genera un reto matemático único para niños de primaria. Debe ser una pregunta de razonamiento matemático divertida. Responde en JSON: { \"question\": \"...\", \"correctAnswer\": \"...\", \"hint\": \"...\" }. No incluyas markdown."
+          content: `Genera un reto matemático ÚNICO, INÉDITO y NUEVO para niños de primaria. Debe ser una pregunta de razonamiento matemático interactiva.
+          Temática obligatoria: ${randomTheme}. 
+          Usa diferentes números en las operaciones para que no se repitan nunca (Semilla lógica: ${seed}).
+          Responde EXCLUSIVAMENTE en formato JSON: { "question": "La pregunta...", "correctAnswer": "Solo el número de la respuesta", "hint": "Una pista corta" }. No incluyas markdown ni texto fuera del JSON.`
         }]
       });
 
