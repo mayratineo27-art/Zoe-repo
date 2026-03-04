@@ -567,6 +567,7 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
 
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
+        response_format: { type: "json_object" },
         messages: [{
           role: "user",
           content: `Genera una lección de matemáticas TOTALMENTE ÚNICA y NUEVA para niños de primaria sobre el tema: "${topic}". 
@@ -625,6 +626,7 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
       const seed = Math.floor(Math.random() * 100000);
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
+        response_format: { type: "json_object" },
         messages: [{
           role: "user",
           content: `Genera una NUEVA pregunta de práctica matemática, MUY PRÁCTICA y enfocada en la vida real, sobre el tema: "${activeLesson.topic}".
@@ -677,7 +679,7 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
 
   const handlePracticeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (answer === activeLesson.practice.correctAnswer) {
+    if (String(answer).trim().toLowerCase() === String(activeLesson.practice.correctAnswer).trim().toLowerCase()) {
       setFeedback('correct');
       addXp(100);
 
@@ -967,6 +969,7 @@ const GamesSection = ({ addXp }: any) => {
 
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
+        response_format: { type: "json_object" },
         messages: [{
           role: "user",
           content: `Genera un reto matemático ÚNICO, INÉDITO y NUEVO para niños de primaria. Debe ser una pregunta de razonamiento matemático interactiva.
