@@ -24,6 +24,7 @@ import {
   ChevronRight,
   Play,
   RotateCcw,
+  RefreshCw,
   CheckCircle2,
   AlertCircle,
   Zap,
@@ -538,6 +539,7 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'wrong'>('none');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isRegeneratingPractice, setIsRegeneratingPractice] = useState(false);
   const [showAiInput, setShowAiInput] = useState(false);
   const [aiTopic, setAiTopic] = useState('');
 
@@ -605,6 +607,48 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
       alert(`¡Ups! No pude crear la lección: ${error.message || 'Error desconocido'}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const regeneratePracticeWithAI = async () => {
+    if (!activeLesson) return;
+    setIsRegeneratingPractice(true);
+    setFeedback('none');
+    setAnswer('');
+    setShowHint(false);
+
+    try {
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) throw new Error("API Key de Groq no configurada.");
+
+      const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+      const seed = Math.floor(Math.random() * 100000);
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{
+          role: "user",
+          content: `Genera una NUEVA pregunta de práctica matemática, MUY PRÁCTICA y enfocada en la vida real, sobre el tema: "${activeLesson.topic}".
+          Usa la semilla aleatoria ${seed} para asegurar que los números y el problema sean completamente distintos a la pregunta anterior.
+          Responde EXCLUSIVAMENTE en formato JSON estricto: { "question": "Nueva pregunta de práctica enfocada en resolución de problemas reales (usa texto simple y números)", "correctAnswer": "Respuesta (solo el número)", "hint": "Una nueva pista curiosa y útil" }. No incluyas markdown ni texto fuera del JSON.`
+        }]
+      });
+
+      const text = response.choices[0]?.message?.content || "";
+      const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      const newPractice = JSON.parse(jsonStr);
+
+      if (newPractice && newPractice.question && newPractice.correctAnswer) {
+        const updatedLesson = { ...activeLesson, practice: newPractice };
+        setActiveLesson(updatedLesson);
+        setLessons((prev: any) => prev.map((l: any) => l.id === updatedLesson.id ? updatedLesson : l));
+      } else {
+        throw new Error("Formato inválido");
+      }
+    } catch (error: any) {
+      console.error(error);
+      alert("No se pudo regenerar la práctica en este momento.");
+    } finally {
+      setIsRegeneratingPractice(false);
     }
   };
 
@@ -863,12 +907,23 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
                   Terminar Lección
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  className="w-full py-4 roblox-button-blue text-xs font-black uppercase tracking-widest"
-                >
-                  Comprobar
-                </button>
+                <div className="flex w-full gap-4">
+                  <button
+                    type="submit"
+                    className="flex-1 py-4 roblox-button-blue text-xs font-black uppercase tracking-widest"
+                  >
+                    Comprobar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={regeneratePracticeWithAI}
+                    disabled={isRegeneratingPractice}
+                    className={`flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 border-b-4 border-gray-300 ${isRegeneratingPractice ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isRegeneratingPractice ? <RotateCcw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                    Otra Pregunta
+                  </button>
+                </div>
               )}
             </div>
           </form>
