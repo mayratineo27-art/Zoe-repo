@@ -899,34 +899,32 @@ const LessonsSection = ({ addXp, level, lessons, setLessons }: any) => {
               </motion.div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex w-full gap-4 flex-col sm:flex-row">
               {feedback === 'correct' ? (
                 <button
                   type="button"
                   onClick={() => setActiveLesson(null)}
-                  className="w-full py-4 roblox-button-blue text-xs font-black uppercase tracking-widest"
+                  className="flex-1 py-4 roblox-button-blue text-xs font-black uppercase tracking-widest"
                 >
                   Terminar Lección
                 </button>
               ) : (
-                <div className="flex w-full gap-4">
-                  <button
-                    type="submit"
-                    className="flex-1 py-4 roblox-button-blue text-xs font-black uppercase tracking-widest"
-                  >
-                    Comprobar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={regeneratePracticeWithAI}
-                    disabled={isRegeneratingPractice}
-                    className={`flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 border-b-4 border-gray-300 ${isRegeneratingPractice ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isRegeneratingPractice ? <RotateCcw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                    Otra Pregunta
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  className="flex-1 py-4 roblox-button-blue text-xs font-black uppercase tracking-widest"
+                >
+                  Comprobar
+                </button>
               )}
+              <button
+                type="button"
+                onClick={regeneratePracticeWithAI}
+                disabled={isRegeneratingPractice}
+                className={`flex-1 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 border-b-4 border-gray-300 ${isRegeneratingPractice ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isRegeneratingPractice ? <RotateCcw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                Otra Pregunta
+              </button>
             </div>
           </form>
         </div>
